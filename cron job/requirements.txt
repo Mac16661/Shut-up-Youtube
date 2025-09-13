@@ -1,0 +1,7 @@
+pymongo
+boto3
+python-dotenv
+boto3
+google-api-python-client
+pydantic
+groq

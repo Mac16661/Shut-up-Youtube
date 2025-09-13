@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "ShutUp",
+  "version": "1.0",
+  "description": "YouTube video blocker.",
+  "permissions": ["storage", "scripting"],
+  "host_permissions": [
+    "https://www.youtube.com/*",
+    "https://m.youtube.com/*",
+    "http://localhost/*",
+    "https://asia-south1-adverse-436618.cloudfunctions.net/shutthefupp/*"
+  ],
+  "action": { "default_popup": "popup.html" },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*", "https://m.youtube.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

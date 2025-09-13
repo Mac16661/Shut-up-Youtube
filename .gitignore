@@ -1,0 +1,18 @@
+# Node.js dependencies
+node_modules/
+**/node_modules/
+
+# Python virtual environment
+.venv/
+**/.venv/
+
+# temp data file
+**/data/
+
+# Environment variables
+.env
+**/.env
+
+# OS-specific junk
+.DS_Store
+Thumbs.db
