@@ -57,6 +57,12 @@ It scans your home feed in real-time, identifies channels, and hides videos that
 
 ---
 
+### High Level Design
+
+![High Level Design](https://github.com/Mac16661/Shut-up-Youtube/blob/main/YT.png?raw=true)
+
+
+
 ## 🔌 API Example
 
 ### Request
