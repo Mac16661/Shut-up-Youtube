@@ -1,0 +1,57 @@
+# Privacy Policy
+
+**Extension Name:** ShutUp
+**Version:** 1.0  
+**Last Updated:** September 2025  
+
+---
+
+## Data Collection
+
+This extension only reads **publicly available YouTube channel names and handles** to categorize videos according to user-selected channel categories. It does **not collect, store, or share any personal or sensitive information** such as:
+
+- Names, email addresses, or other personally identifiable information (PII)  
+- Authentication credentials, passwords, or PINs  
+- Web browsing history outside of YouTube  
+- Location, financial, or health information  
+- Personal communications (emails, messages, or chat content)  
+
+---
+
+## Purpose of Data Usage
+
+The publicly available channel information is used solely to:  
+
+- Determine the category of each YouTube channel  
+- Hide or display videos based on the user’s selected categories  
+- Cache computed results locally to reduce repeated backend requests and improve performance  
+
+No information is used for advertising, tracking, or any purpose outside the intended functionality.
+
+---
+
+## Data Storage
+
+- Cached data is stored **locally** in the browser using the `storage` API.  
+- No backend storage retains any personal or sensitive data beyond the minimal public channel information necessary for categorization.  
+
+---
+
+## Security
+
+- No remote code execution is performed.  
+- All processing is limited to the extension’s functionality.  
+- Host permissions are strictly limited to:  
+  - YouTube pages (`https://www.youtube.com/*`, `https://m.youtube.com/*`)  
+  - The backend API endpoint (`https://asia-south1-adverse-436618.cloudfunctions.net/shutthefupp/*`)  
+
+---
+
+## Contact
+
+For questions regarding this privacy policy or data practices, please contact:  
+**Email:** macy16661@gmail.com  
+
+---
+
+**Note:** By using this extension, you agree to the terms outlined in this privacy policy.
