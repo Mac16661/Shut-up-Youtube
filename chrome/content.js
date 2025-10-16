@@ -1,6 +1,24 @@
 // ────────────── State ──────────────
 let blockingEnabled = true;
-const DEFAULT_CATEGORY = 0; // software dev/engineering
+let ALLOWED_CATEGORIES = [];
+
+chrome.storage.sync.get({ allowedCategories: [] }, (data) => {
+  ALLOWED_CATEGORIES = data.allowedCategories;
+  // console.log("Allowed categories:", ALLOWED_CATEGORIES);
+});
+
+// listening to the changes in categories
+chrome.storage.onChanged.addListener((changes) => {
+  if (changes.allowedCategories) {
+    ALLOWED_CATEGORIES = changes.allowedCategories.newValue;
+    // console.log("Updated categories:", ALLOWED_CATEGORIES);
+  }
+});
+
+// chrome.storage.local.get("channelDecisions", (result) => {
+//   console.log("Channel decisions:", result.channelDecisions);
+// });
+
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 1 day
 // const CACHE_TTL = 0;
 
@@ -14,8 +32,19 @@ const processedCards = new WeakSet();
 chrome.storage.sync.get({ blockEnabled: true }, (data) => {
   blockingEnabled = data.blockEnabled;
   chrome.storage.local.get("channelDecisions", (res) => {
-    if (res?.channelDecisions)
+    // On startup re-checking the cache expiration and removing it form the chrome local storage
+    if (res?.channelDecisions) {
       Object.assign(channelCache, res.channelDecisions);
+      // Clean expired entries
+      for (const [id, entry] of Object.entries(channelCache)) {
+        if (Date.now() - entry.ts > CACHE_TTL) {
+          delete channelCache[id];
+        }
+      }
+
+      // Save cleaned cache back to storage
+      chrome.storage.local.set({ channelDecisions: channelCache });
+    }
     if (blockingEnabled) scanAndBlock();
   });
 });
@@ -28,7 +57,7 @@ chrome.storage.onChanged.addListener((changes) => {
       scanAndBlock();
     } else {
       unhideAll();
-      console.log("Blocking disabled – all cards restored.");
+      // console.log("Blocking disabled – all cards restored.");
     }
   }
 });
@@ -102,12 +131,12 @@ function getCachedDecision(id) {
   const entry = channelCache[id];
   if (!entry) return null;
   if (Date.now() - entry.ts > CACHE_TTL) return null;
-  return entry.block;
+  return entry.channel_categories;
 }
 
-function saveDecision(id, block) {
+function saveDecision(id, channel_categories) {
   if (!id) return;
-  channelCache[id] = { block, ts: Date.now() };
+  channelCache[id] = { channel_categories, ts: Date.now() };
   chrome.storage.local.set({ channelDecisions: channelCache });
 }
 
@@ -115,15 +144,10 @@ function saveDecision(id, block) {
 function scanAndBlock() {
   if (!blockingEnabled) return;
 
-  if (location.pathname === "/results") {
-    console.log("Search page – skipping scanAndBlock :: ", location.pathname);
-    return;
-  }
-
-  console.log("scanAndBlock running…");
+  // console.log("scanAndBlock running…");
 
   const nodes = Array.from(document.querySelectorAll(cardSelectors.join(",")));
-  console.log("Found nodes:", nodes.length);
+  // console.log("Found nodes:", nodes.length);
 
   const entries = [];
 
@@ -142,20 +166,30 @@ function scanAndBlock() {
   });
 
   // quick debug dump
-  entries.forEach((e) => {
-    if (!e.channel_id && !e.channel_name) return;
-    console.log(`[${e.idx}] name="${e.channel_name}" id="${e.channel_id}"`);
-  });
+  // entries.forEach((e) => {
+  // if (!e.channel_id && !e.channel_name) return;
+  // console.log(`[${e.idx}] name="${e.channel_name}" id="${e.channel_id}"`);
+  // });
 
   // apply cache / collect pending
   const pending = [];
   entries.forEach((e) => {
     if (!e.channel_id && !e.channel_name) return;
+
+    // TODO: Need to change here after modification in block from boolean val to video categories array
     const cached = getCachedDecision(e.channel_id);
-    if (cached !== null) {
-      if (cached) {
+    // console.log(cached);
+
+    if (cached !== null && cached != undefined) {
+      // Check if cached (contains an arr have at least one of the allowed categories), if yes set cached to true else false
+      const shouldBlock =
+        Array.isArray(cached) && cached.length > 0
+          ? !cached.some((cat) => ALLOWED_CATEGORIES.includes(cat))
+          : true;
+
+      if (shouldBlock) {
         e.node.style.display = "none";
-        console.debug("Applied cached block:", e.channel_name, e.channel_id);
+        // console.debug("Applied cached block:", e.channel_name, e.channel_id);
       }
     } else {
       pending.push({
@@ -166,12 +200,35 @@ function scanAndBlock() {
     }
   });
 
+  if (location.pathname === "/results") {
+    if (!pending.length) {
+      console.debug("No pending channels found");
+      return;
+    }
+
+    // console.log(`Calling processChannels for ${pending.length} channels`);
+
+    chrome.runtime.sendMessage(
+      { action: "processChannels", data: pending },
+      (response) => {
+        // Debugging statements for save channels
+        // if (chrome.runtime.lastError) {
+        //   console.warn("Runtime error:", chrome.runtime.lastError.message);
+        //   return;
+        // }
+        // console.log("Got response:", response);
+      }
+    );
+
+    return;
+  }
+
   if (pending.length) {
-    console.debug("Calling background for", pending.length, "channels");
+    // console.debug("Calling background for", pending.length, "channels");
     chrome.runtime.sendMessage(
       { action: "callAPI", data: pending },
       (response) => {
-        console.debug("callAPI response:", response);
+        // console.debug("callAPI response:", response);
         const results = response?.data?.result ?? response?.result ?? [];
         if (!Array.isArray(results)) {
           console.warn("Unexpected callAPI response shape", results);
@@ -182,9 +239,12 @@ function scanAndBlock() {
           const incomingId = normalizeId(r.channel_id || r.id || r.href || "");
           const incomingName = r.channel_name || r.name || null;
           const shouldBlock =
-            typeof r.channel_category !== "undefined"
-              ? r.channel_category !== DEFAULT_CATEGORY
-              : !!r.block;
+            Array.isArray(r.channel_categories) &&
+            r.channel_categories.length > 0
+              ? !r.channel_categories.some((cat) =>
+                  ALLOWED_CATEGORIES.includes(cat)
+                )
+              : true; // previously !!r.block (not sure what is is doing here) changing it to true statement
 
           let local = null;
           if (incomingId)
@@ -193,13 +253,15 @@ function scanAndBlock() {
             local = entries.find((e) => e.channel_name === incomingName);
 
           const keyToSave = incomingId || (local && local.channel_id) || null;
-          if (keyToSave) saveDecision(keyToSave, shouldBlock);
+          // TODO: Instead of setting boolean values we must store the actual video categories arr
+          if (keyToSave) saveDecision(keyToSave, r.channel_categories);
 
+          // Block video if consists category of -1 and also if it dose not match any default value
           if (local && shouldBlock) {
             local.node.style.display = "none";
-            console.log(
-              `Blocked ${local.channel_name || incomingName} (${keyToSave})`
-            );
+            // console.log(
+            //   `Blocked:${shouldBlock} -> ${incomingName} -> ${r.channel_categories} Allowed Category: ${ALLOWED_CATEGORIES}`
+            // );
           }
         });
       }
@@ -227,11 +289,6 @@ function unhideAll() {
 
 // ────────────── Observe DOM ──────────────
 (() => {
-  if (location.pathname === "/results") {
-    console.log("Search page detected :: ", location.pathname);
-    return;
-  }
-
   const feed = document.querySelector("ytd-page-manager") || document.body;
 
   const observer = new MutationObserver((mutations) => {

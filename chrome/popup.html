@@ -1,23 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>NeetCode Blocker</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      min-width: 160px;
-      padding: 10px;
-    }
-    label { cursor: pointer; }
-  </style>
-</head>
-<body>
-  <h3>NeetCode Blocker</h3>
-  <label>
-    <input type="checkbox" id="toggleBlock">
-    Block NeetCode
-  </label>
-  <script src="popup.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <title>ShutUp – AI YouTube Video Blocker</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        min-width: 260px;
+        padding: 10px;
+      }
+      label {
+        cursor: pointer;
+      }
+
+      /* Container for the label and tooltip */
+      .label-with-tooltip {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+        font-family: sans-serif;
+      }
+
+      /* The tooltip itself */
+      .label-with-tooltip .tooltip {
+        visibility: hidden;
+        width: 220px;
+        background-color: #333;
+        color: #fff;
+        text-align: left;
+        border-radius: 6px;
+        margin-left: 15px;
+        padding: 10px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%; /* position above the label */
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0;
+        transition: opacity 0.25s ease;
+        font-size: 13px;
+      }
+
+      /* Small arrow below the tooltip */
+      .label-with-tooltip .tooltip::after {
+        content: "";
+        position: absolute;
+        top: 100%; /* bottom of tooltip */
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #333 transparent transparent transparent;
+      }
+
+      /* Show tooltip on hover */
+      .label-with-tooltip:hover .tooltip {
+        visibility: visible;
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>ShutUp – AI YouTube Video Blocker</h3>
+
+    <label> <input type="checkbox" id="toggleBlock" /> ShutUp </label>
+
+    <p>Check to allow</p>
+
+    <label class="label-with-tooltip">
+      <input type="checkbox" class="category-toggle" data-category="0" />
+      Allow IT & Computer Science
+      <span class="tooltip"> AI, CS, IT, Data Science, Cybersecurity etc</span>
+    </label>
+    <br />
+    <label class="label-with-tooltip">
+      <input type="checkbox" class="category-toggle" data-category="1" />
+      Allow Core Engineering & Robotics
+      <span class="tooltip">
+        Mechanical, Electrical, Mechatronics, Aeronautics, Robotics etc</span
+      >
+    </label>
+    <br />
+    <label class="label-with-tooltip">
+      <input type="checkbox" class="category-toggle" data-category="2" />
+      Allow Health & Life Sciences
+      <span class="tooltip"> Medicine, Biotech, Nursing, Biomedical etc</span>
+    </label>
+    <br />
+    <label class="label-with-tooltip">
+      <input type="checkbox" class="category-toggle" data-category="3" />
+      Allow Business, Finance & Economics
+      <span class="tooltip"> Economics MBA, Fintech, Management etc</span>
+    </label>
+    <br />
+    <label class="label-with-tooltip">
+      <input type="checkbox" class="category-toggle" data-category="4" />
+      Allow Law, Policy & Governance
+      <span class="tooltip"> Cyber Law, Tech Policy etc</span>
+    </label>
+    <br />
+    <label class="label-with-tooltip">
+      <input type="checkbox" class="category-toggle" data-category="5" />
+      Allow Design, Media & Communication
+      <span class="tooltip"> Game Design, Animation, UX etc</span>
+    </label>
+    <br />
+    <label class="label-with-tooltip">
+      <input type="checkbox" class="category-toggle" data-category="5" />
+      Allow Education & Social Sciences
+      <span class="tooltip"> EdTech, Psychology, Sociology etc</span>
+    </label>
+    <br />
+    <label class="label-with-tooltip">
+      <input type="checkbox" class="category-toggle" data-category="5" />
+      Allow Arts & Humanities
+      <span class="tooltip"> Literature, Music, Philosophy etc</span>
+    </label>
+
+    <script src="popup.js"></script>
+  </body>
 </html>
+
+<!-- 
+  🌍 Summary by Category
+Category	Examples	Overall Demand Level (2025–2030)
+Technology & Computing	AI, CS, IT, Data Science, Cybersecurity	🔥 Extremely High
+Engineering & Robotics	Mechanical, Electrical, Mechatronics, Robotics	🔥 High
+Health & Life Sciences	Medicine, Biotech, Nursing, Biomedical	🔥 High
+Business, Finance & Economics	MBA, Fintech, Management	🔥 High
+Environment & Sustainability	Renewable Energy, Climate Science	🔥 Rising
+Law, Policy & Governance	Cyber Law, Tech Policy	🔥 Rising
+Design, Media & Communication	Game Design, Animation, UX	🔥 Rising
+Education & Social Sciences	EdTech, Psychology, Sociology	⚡ Moderate but essential
+Arts & Humanities	Literature, Music, Philosophy	⚡ Moderate; depends on niche and creativity
+Frontier Technologies	Quantum, Space, Nano	🚀 Emerging but niche
+
+-->

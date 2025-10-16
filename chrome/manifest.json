@@ -1,13 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "ShutUp",
+  "name": "ShutUp – AI YouTube Video Blocker",
   "version": "1.0",
-  "description": "YouTube video blocker.",
-  "permissions": ["storage", "scripting"],
+  "description": "Hide distracting YouTube videos automatically.",
+  "permissions": ["storage"],
   "host_permissions": [
-    "https://www.youtube.com/*",
-    "https://m.youtube.com/*",
-    "http://localhost/*",
+    "https://youtube.com/*",
+    "https://*.youtube.com/*",
     "https://asia-south1-adverse-436618.cloudfunctions.net/shutthefupp/*"
   ],
   "action": { "default_popup": "popup.html" },
@@ -16,7 +15,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://www.youtube.com/*", "https://m.youtube.com/*"],
+      "matches": ["https://youtube.com/*", "https://*.youtube.com/*"],
       "js": ["content.js"],
       "run_at": "document_idle"
     }

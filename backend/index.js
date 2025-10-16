@@ -9,13 +9,13 @@ require("dotenv").config();
 const youtubeRoute = require("./routes/youtubeRoute");
 
 const app = express();
-// const PORT = process.env.PORT || 80; // TODO: Not require while deploying to cloud function
+const PORT = process.env.PORT || 80; // TODO: Not require while deploying to cloud function
 const URI = process.env.MONGODB;
 
 // TODO: connect to mongoDB
 connectToMongoDB(URI).then(() => console.log("MongoDB connected"));
 
-// Basic rate limiter 20 quey per minute [ENV]
+// TODO: Basic rate limiter 20 quey per minute [ENV] (Need to fix it)
 const limiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
   max: 1000, // TODO: Need to change Limit each IP to 1000 requests per windowMs
@@ -39,7 +39,7 @@ app.get("/health", (req, res) => {
 // Routes
 app.use("/api", youtubeRoute);
 
-// TODO: Not required during cloud function deployment 
+// TODO: Not required during cloud function deployment
 // app.listen(PORT, () => {
 //   console.log(`Server running on http://localhost:${PORT}`);
 // });
