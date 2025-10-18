@@ -32,6 +32,7 @@ folder.mkdir(parents=True, exist_ok=True)
 client = MongoClient(MONGO_URL)
 db = client[DB_NAME]
 
+# TODO: Update this function to get more context about the channel, call youtube api with additional param to get channel tittle description etc
 def get_yt_playlist_id(identifier, search_by='id'):
     """Get uploads playlist ID by channel ID, handle, or username"""
 
@@ -40,27 +41,50 @@ def get_yt_playlist_id(identifier, search_by='id'):
         clean_handle = identifier.replace('/@', '').replace('@', '')
 
         request = youtube.channels().list(
-            part='contentDetails',
+            part='snippet,statistics,contentDetails,brandingSettings',
             forHandle=clean_handle
         )
     elif search_by == 'username':
         request = youtube.channels().list(
-            part='contentDetails',
+            part='snippet,statistics,contentDetails,brandingSettings',
             forUsername=identifier
         )
     else:  # search_by == 'id'
         clean_id = identifier.replace('/', '')
         request = youtube.channels().list(
-            part='contentDetails',
+            part='snippet,statistics,contentDetails,brandingSettings',
             id=clean_id
         )
 
     response = request.execute()
 
-    if response['items']:
-        uploads_playlist_id = response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
-        return uploads_playlist_id
-    return None
+    # if response['items']:
+    #     uploads_playlist_id = response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+    #     return uploads_playlist_id
+    # return None
+
+    if not response['items']:
+        return None
+
+    channel = response['items'][0]
+    snippet = channel['snippet']
+    stats = channel['statistics']
+
+    info = {
+        'channel_id': channel['id'],
+        'title': snippet.get('title'),
+        'description': snippet.get('description'),
+        'published_at': snippet.get('publishedAt'),
+        'country': snippet.get('country'),
+        'thumbnails': snippet.get('thumbnails', {}),
+        'view_count': stats.get('viewCount'),
+        'subscriber_count': stats.get('subscriberCount'),
+        'video_count': stats.get('videoCount'),
+        'uploads_playlist_id': channel['contentDetails']['relatedPlaylists']['uploads']
+    }
+
+    return info
+
 
 def get_videos_from_playlist(playlist_id):
     """Get 10 videos from a specific playlist"""
@@ -90,7 +114,7 @@ def get_videos_from_playlist(playlist_id):
         print(f"Error fetching playlist {playlist_id}: {e}")
         return []
 
-def write_to_batch_file(channel_name, uploaded_videos, file_path, unique_id) :
+def write_to_batch_file(channel_name, channel_desc, uploaded_videos, file_path, unique_id) :
     # Manual schema with proper additionalProperties
     response_schema = {
         "type": "object",
@@ -114,24 +138,25 @@ def write_to_batch_file(channel_name, uploaded_videos, file_path, unique_id) :
         "additionalProperties": False
     }
 
-    # System prompt
+    # TODO: In System prompt only keep Engineering, Medical, Management and Arts (instead of all of these)
     system_prompt = """You are a YouTube channel categorizer. Analyze the channel name and video content to determine which categories the channel belongs to.
 
     Categories (use integers 0-9):
-    0: Software Developer/Engineer
-    1: Gaming
-    2: Entertainment & Comedy
-    3: Music & Arts
-    4: Civil Servant
-    5: Sports & Fitness
-    6: Food & Cooking
-    7: Travel & Lifestyle
-    8: News & Politics
-    9: Other
+    0: IT & Computer Science (AI, CS, IT, Data Science, Cybersecurity, Game dev etc)
+    1: Core Engineering & Robotics (Mechanical, Electrical, Mechatronics, Robotics, Aeronautics etc)
+    2: Health & Life Sciences	(Medicine, Biotech, Nursing, Biomedical etc)
+    3: Business, Finance & Economics	(MBA, Fintech, Management etc)
+    4: Environment & Sustainability	(Renewable Energy, Climate Science etc)
+    5: Law, Policy & Governance	(Law, Policy etc)
+    6: Design, Media & Communication	(Game Design, Animation, UX, Journalism etc)
+    7: Education & Social Sciences	(EdTech, Psychology, Sociology etc)
+    8: Current Affairs, News & Politics (Govt Job Coaching, Geo politics)
+    9: Arts & Humanities  (Literature, Philosophy, Geography, Economics, Political Science etc)
 
     Choose relevant categories based on the video content."""
 
-    
+    # print(f"Channel name: {channel_name}\nChannel description: {channel_desc} \nVideos:\n{uploaded_videos}")
+
     batch_request = {
         "custom_id": str(uuid.uuid4()),  # Unique ID
         "method": "POST",
@@ -140,7 +165,7 @@ def write_to_batch_file(channel_name, uploaded_videos, file_path, unique_id) :
             "model": "meta-llama/llama-4-maverick-17b-128e-instruct",
             "messages": [
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Channel name: {channel_name}\nVideos:\n{uploaded_videos}"}
+                {"role": "user", "content": f"Channel name: {channel_name}\nChannel description: {channel_desc} \nVideos:\n{uploaded_videos}"}
             ],
             "response_format": {
                 "type": "json_schema",
@@ -210,7 +235,7 @@ def execute_new_jobs():
         # Process this batch
         print(f"Processing batch of length {len(batch)}")
         
-        # TODO: Add your YouTube API calls and Groq processing here
+        # Add your YouTube API calls and Groq processing here
         processed_successfully = []
         unique_id = uuid.uuid4()         
         file_name = f"{unique_id}.jsonl" 
@@ -221,26 +246,33 @@ def execute_new_jobs():
         
         for channel in batch:
             print(channel["channel_name"], channel["status"])
-            playlist_id = ""
+            channel_info = {}
 
             if "@" in channel["channel_handle"][:2]:
-                playlist_id = get_yt_playlist_id(channel["channel_handle"], search_by='handle') # handle will have @ 
+                channel_info = get_yt_playlist_id(channel["channel_handle"], search_by='handle') # handle will have @ 
             else :
-                playlist_id = get_yt_playlist_id(channel["channel_handle"], search_by='id') # id's wont have @ in it
+                channel_info = get_yt_playlist_id(channel["channel_handle"], search_by='id') # id's wont have @ in it
 
+            # If there is no channel info (may occur due to invalid channel name ot handle)
+            if len(channel_info) == 0:
+                continue
+
+            playlist_id = channel_info['uploads_playlist_id']
             ids = [playlist_id]
             videos = get_videos_from_playlist(ids[0])
 
             channel_name = channel["channel_name"]
+            channel_desc = channel_info["description"]
 
+            # TODO: Remove the description form the video_lines, It should only contain video['title'] and try to include channel description int this instead of description for whole video 
             video_lines = [
-                f"{i}. video title: {video['title']} \n description: {video['description']}"
+                f"{i}. video title: {video['title']}"
                 for i, video in enumerate(videos, 1)
             ]
             uploaded_videos =  "\n".join(video_lines)
-            uploaded_videos = uploaded_videos[:6000]
+            uploaded_videos = uploaded_videos[:6000]    # After removing the description uploaded videos might not cross 6000 length so do the changes accordingly so it dose not give any error
 
-            write_to_batch_file(channel_name, uploaded_videos, file_path, unique_id)
+            write_to_batch_file(channel_name, channel_desc, uploaded_videos, file_path, unique_id)
 
             # For now, assuming all process successfully:
             channel["videos"] = videos
@@ -248,7 +280,7 @@ def execute_new_jobs():
 
         groq_file_path, batch_id = submit_task(file_path) 
 
-        # TODO: push groq_file_path and batch_id into the batch schema
+        # push groq_file_path and batch_id into the batch schema
         batch_doc = {
             'file_id': groq_file_path,
             'batch_id': batch_id,
@@ -263,7 +295,7 @@ def execute_new_jobs():
             print(f"Error inserting batch: {e}")
     
         print("===", len(processed_successfully))
-        # TODO: Bulk update status to 1 for all successfully processed channels (deserves its own function)
+        # Bulk update status to 1 for all successfully processed channels (deserves its own function)
         if processed_successfully:
             update_operations = [
                 UpdateOne(
@@ -273,7 +305,7 @@ def execute_new_jobs():
                     },
                     {
                         "$set": {"status": 1},
-                        "$push": {"videos": {"$each": channel["videos"]}}   # TODO: just update here to insert videos
+                        "$push": {"videos": {"$each": channel["videos"]}}   # just update here to insert videos
                     }
                 ) 
                 for channel in processed_successfully
@@ -283,7 +315,7 @@ def execute_new_jobs():
             print(f"Updated status for {result.modified_count} documents in this batch")
 
     print("All batches processed successfully!")
-    return  # TODO: for testing purpose 
+    return  # for testing purpose 
 
 def update_running_jobs():
     """
@@ -426,16 +458,16 @@ def is_ec2_instance(timeout=0.1):
 if __name__ == "__main__":
     # TODO: run two separate threads for both of them
     # execute_new_jobs()
-    update_running_jobs()
+    # update_running_jobs()
 
-    # new_job_thread = threading.Thread(target=execute_new_jobs)
-    # update_job_thread = threading.Thread(target=update_running_jobs)
-    # new_job_thread.start()
-    # update_job_thread.start()
+    new_job_thread = threading.Thread(target=execute_new_jobs)
+    update_job_thread = threading.Thread(target=update_running_jobs)
+    new_job_thread.start()
+    update_job_thread.start()
 
     # # Wait for thread to complete
-    # new_job_thread.join()
-    # update_job_thread.join()
+    new_job_thread.join()
+    update_job_thread.join()
 
     # closing database connections 
     client.close()
