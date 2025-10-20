@@ -141,17 +141,15 @@ def write_to_batch_file(channel_name, channel_desc, uploaded_videos, file_path, 
     # TODO: In System prompt only keep Engineering, Medical, Management and Arts (instead of all of these)
     system_prompt = """You are a YouTube channel categorizer. Analyze the channel name and video content to determine which categories the channel belongs to.
 
-    Categories (use integers 0-9):
-    0: IT & Computer Science (AI, CS, IT, Data Science, Cybersecurity, Game dev etc)
-    1: Core Engineering & Robotics (Mechanical, Electrical, Mechatronics, Robotics, Aeronautics etc)
-    2: Health & Life Sciences	(Medicine, Biotech, Nursing, Biomedical etc)
-    3: Business, Finance & Economics	(MBA, Fintech, Management etc)
-    4: Environment & Sustainability	(Renewable Energy, Climate Science etc)
-    5: Law, Policy & Governance	(Law, Policy etc)
-    6: Design, Media & Communication	(Game Design, Animation, UX, Journalism etc)
-    7: Education & Social Sciences	(EdTech, Psychology, Sociology etc)
-    8: Current Affairs, News & Politics (Govt Job Coaching, Geo politics)
-    9: Arts & Humanities  (Literature, Philosophy, Geography, Economics, Political Science etc)
+    Categories (use integers 0-6):
+    0: IT & Computer Science (AI, CS, IT, Data Science, Cybersecurity, Game development etc)
+    1: Core Engineering & Robotics (Mechanical, Electrical, Mechatronics, Robotics, Aeronautics, Chemical, Electronics & Communication, Instrumentation, Industrial & Production, Aerospace, Automobile, Metallurgical & Materials, Environmental, Mining,Marine & Ocean, Petroleum ,Biomedical, Nuclear, Structural , Agricultural, Textile    etc)
+    2: Medicine, Health & Life Sciences	(Medicine, Biotech, Biomedical, Nursing, Biotechnology, Genetics, Zoology, Botany, Biochemistry, Environmental Science, Pharmacy,  Marine Biology, Medical Laboratory Technology,Bachelor of Medicine, Bachelor of Surgery, Bachelor of Ayurvedic Medicine & Surger, Bachelor of Homeopathic Medicine & Surgery, Bachelor of Physiotherapy, Biological Sciences   etc)
+    3: Business, Finance & Economics	(MBA, Fintech, Management, Finance, Chartered Accountant, Economics, Commerce, Foreign Trade Management, Banking, Marketing,  Supply Chain Management  etc)
+    4: Arts & Humanities  (Literature, Philosophy, Geography, Economics, Political Science, Humanities, History, Languages & Linguistics,Religious Studies, Sociology, Psychology, Anthropology, Archaeology, Arts & Fine Arts, Music & Performing Arts, Theater & Drama, Design & Visual Communication , Media & Communication, Cultural Studies, Education & Pedagogy, Public Administration & Policy, Interdisciplinary Arts, Fashion & Textile Design, Game Design & Animation , Digital Media Arts, Creative Writing & Literature, Cultural Heritage and Preservation, Environmental and Ecological Arts, Heritage & Museum Studies  etc)
+    5: Competitive Exams (Gaokao, IIT JEE Advanced, UPSC Civil Services Exam (CSE), GRE, CFA (Chartered Financial Analyst), USMLE (United States Medical Licensing Exam), CA Exam (ICAI, ICMAI), Mensa IQ Test, CAT (Common Admission Test), CLAT (Common Law Admission Test), LSAT, NEET (National Eligibility cum Entrance Test), AIIMS MBBS Entrance, SSC CGL (Combined Graduate Level), IBPS PO, SBI PO, GATE (Graduate Aptitude Test in Engineering), TOEFL / IELTS, Defence Exams (NDA, CDS, AFCAT), ESA (Engineering Services Examination), National Talent Search Exam, International Science Olympiads  etc)
+    6: High School/ Pre-university (English, Hindi, Maths, Science, Social Science, Economics, Geography, History etc)
+    7: Others
 
     Choose relevant categories based on the video content."""
 

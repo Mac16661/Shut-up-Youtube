@@ -1,5 +1,6 @@
 const globalToggle = document.getElementById("toggleBlock");
 const categoryToggles = document.querySelectorAll(".category-toggle");
+const statusMessage = document.getElementById("statusMessage");
 
 // Default data
 let allowedCategories = [];
@@ -22,6 +23,11 @@ chrome.storage.sync.get({ blockEnabled: true }, (data) => {
 // Global enable/disable switch
 globalToggle.addEventListener("change", () => {
   chrome.storage.sync.set({ blockEnabled: globalToggle.checked });
+  if (globalToggle.checked) {
+    statusMessage.textContent = "Tab On Below To Allow";
+  } else {
+    statusMessage.textContent = "Click To Turn On";
+  }
 });
 
 // Category checkboxes
@@ -41,4 +47,3 @@ categoryToggles.forEach((cb) => {
     chrome.storage.sync.set({ allowedCategories });
   });
 });
-

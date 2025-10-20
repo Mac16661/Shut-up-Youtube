@@ -1,0 +1,184 @@
+body {
+  font-family: "Roboto", Arial, sans-serif;
+  min-width: 260px;
+  padding: 10px;
+  background: #fafafa;
+}
+/* ########  Default/Power off screen  ######## */
+
+/* Heading */
+.heading {
+  font-family: "Montserrat", Arial, sans-serif;
+  font-size: 1.4rem;
+  color: #fff;
+  letter-spacing: 1px;
+  background: linear-gradient(90deg, #e53935, #1e88e5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 18px;
+  margin-top: 5px;
+  text-align: center;
+}
+
+/* Power Button */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 10vh;
+  width: 100%;
+  background-color: #fafafa;
+  color: black;
+  font-family: Arial, sans-serif;
+  /* overflow: visible; */
+  margin-bottom: 34px;
+}
+
+/* Hide native checkbox */
+.power-switch input[type="checkbox"] {
+  display: none;
+}
+
+/* Power icon styles */
+.power-icon {
+  font-size: 48px;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  margin-top: 34px;
+}
+
+.material-icons.power-icon {
+  font-size: 58px !important;
+}
+
+/* On checked, icon red blue gradient */
+.power-switch input[type="checkbox"]:checked + .power-icon {
+  background: linear-gradient(
+      rgba(255, 255, 255, 0.2),
+      rgba(255, 255, 255, 0.2)
+    ),
+    linear-gradient(90deg, #e53935, #1e88e5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text; /* For Firefox */
+  text-fill-color: transparent; /* Standard, not fully supported */
+}
+
+/* Status Message */
+.status-message {
+  font-family: "Montserrat", Arial, sans-serif;
+  font-size: 0.9rem;
+  /* font-weight: 600; */
+  color: #fff;
+  letter-spacing: 1px;
+  background: linear-gradient(90deg, #e53935, #1e88e5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 5px;
+  text-align: center;
+}
+
+/* ########  Categories  ########*/
+
+.options-list {
+  max-width: 400px;
+  margin: 0 auto;
+}
+.checkbox-pill {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  margin-bottom: 7px;
+  border-radius: 5px;
+  background: #fff;
+  cursor: pointer;
+  transition: background 0.1s;
+  border: 1px solid #eee;
+  font-size: 1.06rem;
+  position: relative;
+  min-width: 230px;
+  box-shadow: 0 2px 8px rgba(30, 40, 80, 0.06);
+}
+.checkbox-pill input[type="checkbox"] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 2px solid #e53935;
+  margin-right: 16px;
+  outline: none;
+  cursor: pointer;
+  background: #fff;
+  transition: background 0.25s, border-color 0.25s;
+  position: relative;
+  top: 1px;
+  display: none;
+}
+.checkbox-pill input[type="checkbox"]:checked {
+  background: #111;
+  border-color: #111;
+}
+
+.checkbox-pill .pill-label {
+  background: linear-gradient(
+    90deg,
+    #e53935,
+    #1e88e5
+  ); /* always use gradient for the text */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  font-weight: 400; /* 400 is regular weight */
+  font-size: 0.95rem; /* example smaller size */
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Add this for horizontal centering */
+  text-align: center; /* Ensures wrapped text is centered */
+  width: 100%;
+}
+/* On checked, set pill background to black */
+.checkbox-pill input[type="checkbox"]:checked ~ .pill-label {
+  /* still red label, pill stays black */
+}
+.checkbox-pill input[type="checkbox"]:checked ~ .pill-label {
+  /* extra selector clarifies behavior for label color */
+}
+/* On checked, set pill background */
+.checkbox-pill input[type="checkbox"]:checked ~ .pill-label,
+.checkbox-pill input[type="checkbox"]:checked {
+  /* keep label red, bg handled below */
+}
+.checkbox-pill input[type="checkbox"]:checked ~ .pill-label::after {
+  /* nothing for now */
+}
+.checkbox-pill input[type="checkbox"]:checked ~ .pill-label {
+  /* nothing for now, needed for specificity */
+}
+.checkbox-pill input[type="checkbox"]:checked ~ .pill-label {
+  /* no action */
+}
+/* actual pill bg */
+.checkbox-pill:has(input[type="checkbox"]:checked) {
+  background: #000;
+}
+
+.checkbox-pill .tooltip {
+  color: #777;
+  font-size: 0.95rem;
+  margin-left: 10px;
+  opacity: 0.75;
+}
+/* Optional: Responsive tweak */
+@media (max-width: 600px) {
+  .checkbox-pill {
+    font-size: 0.98rem;
+    padding: 12px 10px;
+  }
+  .options-list {
+    max-width: 99vw;
+  }
+}
