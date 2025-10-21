@@ -11,6 +11,8 @@ chrome.storage.sync.get({ allowedCategories: [] }, (data) => {
 chrome.storage.onChanged.addListener((changes) => {
   if (changes.allowedCategories) {
     ALLOWED_CATEGORIES = changes.allowedCategories.newValue;
+
+    // TODO: Reloading the page after allowing new categories
     // console.log("Updated categories:", ALLOWED_CATEGORIES);
   }
 });

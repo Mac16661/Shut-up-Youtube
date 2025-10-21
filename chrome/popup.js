@@ -18,15 +18,16 @@ chrome.storage.sync.get({ allowedCategories: [] }, (data) => {
 // Load global toggle state
 chrome.storage.sync.get({ blockEnabled: true }, (data) => {
   globalToggle.checked = data.blockEnabled;
+  if (globalToggle.checked) statusMessage.textContent = "Tap below to enable";
 });
 
 // Global enable/disable switch
 globalToggle.addEventListener("change", () => {
   chrome.storage.sync.set({ blockEnabled: globalToggle.checked });
   if (globalToggle.checked) {
-    statusMessage.textContent = "Tab On Below To Allow";
+    statusMessage.textContent = "Tap below to enable";
   } else {
-    statusMessage.textContent = "Click To Turn On";
+    statusMessage.textContent = "Click to Power On";
   }
 });
 

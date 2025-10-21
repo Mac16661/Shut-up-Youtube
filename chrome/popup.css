@@ -101,6 +101,7 @@ body {
   position: relative;
   min-width: 230px;
   box-shadow: 0 2px 8px rgba(30, 40, 80, 0.06);
+  position: relative;
 }
 .checkbox-pill input[type="checkbox"] {
   appearance: none;
@@ -139,6 +140,7 @@ body {
   justify-content: center; /* Add this for horizontal centering */
   text-align: center; /* Ensures wrapped text is centered */
   width: 100%;
+  position: relative;
 }
 /* On checked, set pill background to black */
 .checkbox-pill input[type="checkbox"]:checked ~ .pill-label {
@@ -166,6 +168,7 @@ body {
   background: #000;
 }
 
+/* Not using this css currently */
 .checkbox-pill .tooltip {
   color: #777;
   font-size: 0.95rem;
@@ -181,4 +184,40 @@ body {
   .options-list {
     max-width: 99vw;
   }
+}
+
+.tooltip-label {
+  max-width: 100%;
+  min-width: 100%;
+  display: none;
+  height: auto;
+  min-height: fit-content;
+  position: absolute;
+  bottom: 150%; /* positions above the label */
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  background: black !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: initial !important;
+  background-clip: unset !important;
+  color: #fff !important; /* force white text */
+  font-family: Arial, sans-serif;
+  padding: 8px 18px;
+  border-radius: 5px;
+  font-weight: 500;
+  font-size: 0.8rem;
+  white-space: normal;
+  border: 1px solid #444;
+  box-shadow: 0 2px 12px 0 rgba(30, 30, 50, 0.07);
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.checkbox-pill:hover .tooltip-label,
+.pill-label:hover .tooltip-label {
+  display: block;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }

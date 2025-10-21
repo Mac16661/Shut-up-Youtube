@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>ShutUp – AI YouTube Video Blocker</title>
+    <title>DND – AI YouTube Video Blocker</title>
     <link rel="stylesheet" href="popup.css" />
     <link
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
@@ -10,83 +10,89 @@
     />
   </head>
   <body>
-    <p class="heading">ShutUp – AI YouTube Video Blocker</p>
+    <!-- <img
+      src="DND32.png"
+      alt="Extension Logo"
+      style="width: 32px; height: 32px"
+    /> -->
+    <p class="heading">DND – AI YouTube Video Blocker</p>
 
     <div class="container">
       <label class="power-switch">
         <input type="checkbox" id="toggleBlock" />
         <span class="material-icons power-icon">power_settings_new</span>
       </label>
-      <div id="statusMessage" class="status-message">Click To Turn On</div>
+      <div id="statusMessage" class="status-message">Click to Power On</div>
     </div>
 
     <br />
 
     <div class="options-list">
       <label class="checkbox-pill">
-        <input type="checkbox" />
+        <input type="checkbox" class="category-toggle" data-category="0" />
         <span class="pill-label"
           >IT & Computer Science
-          <!-- <span class="tooltip"
+          <span class="tooltip-label"
             >AI, CS, IT, Data Science, Cybersecurity, Game Development etc</span
-          > -->
+          >
         </span>
       </label>
       <label class="checkbox-pill">
-        <input type="checkbox" />
+        <input type="checkbox" class="category-toggle" data-category="1" />
         <span class="pill-label"
           >Core Engineering & Robotics
-          <!-- <span class="tooltip"
+          <span class="tooltip-label"
             >Mechanical, Electrical, Mechatronics, Aeronautics, Robotics
             etc</span
-          > -->
+          >
         </span>
       </label>
       <label class="checkbox-pill">
-        <input type="checkbox" />
+        <input type="checkbox" class="category-toggle" data-category="2" />
         <span class="pill-label"
           >Medicine, Health & Biology
-          <!-- <span class="tooltip"
+          <span class="tooltip-label"
             >Medicine, Biotech, Biomedical, Marine Biology etc</span
-          > -->
+          >
         </span>
       </label>
       <label class="checkbox-pill">
-        <input type="checkbox" />
+        <input type="checkbox" class="category-toggle" data-category="3" />
         <span class="pill-label"
           >Business, Finance & Economics
-          <!-- <span class="tooltip"
+          <span class="tooltip-label"
             >Economics, MBA, Fintech, Commerce,Management etc</span
-          > -->
+          >
         </span>
       </label>
       <label class="checkbox-pill">
-        <input type="checkbox" />
+        <input type="checkbox" class="category-toggle" data-category="4" />
         <span class="pill-label"
           >Arts & Humanities
-          <!-- <span class="tooltip"
+          <span class="tooltip-label"
             >Literature, Philosophy, Geography, Economics, Political Science
-            etc</span> -->
+            etc</span
+          >
         </span>
       </label>
       <label class="checkbox-pill">
-        <input type="checkbox" />
+        <input type="checkbox" class="category-toggle" data-category="5" />
         <span class="pill-label"
           >Competitive Exams
-          <!-- <span class="tooltip"
+          <span class="tooltip-label"
             >Gaokao, IIT JEE Advanced, UPSC, TOEFL, IELTS, GATE, NDA, Olympiads,
             CA, SSC, NEET, USMLE etc</span
-          > -->
+          >
         </span>
       </label>
       <label class="checkbox-pill">
-        <input type="checkbox" />
+        <input type="checkbox" class="category-toggle" data-category="6" />
         <span class="pill-label"
           >High School / Pre-university
-          <!-- <span class="tooltip"
+          <span class="tooltip-label"
             >English, Hindi, Maths, Science, Social Science, Economics,
             Geography, History etc</span
-          > -->
+          >
         </span>
       </label>
     </div>
