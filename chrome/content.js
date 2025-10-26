@@ -171,12 +171,17 @@ function scanAndBlock() {
   // entries.forEach((e) => {
   // if (!e.channel_id && !e.channel_name) return;
   // console.log(`[${e.idx}] name="${e.channel_name}" id="${e.channel_id}"`);
+  //   console.log(e);
   // });
 
   // apply cache / collect pending
   const pending = [];
   entries.forEach((e) => {
-    if (!e.channel_id && !e.channel_name) return;
+    if (!e.channel_id && !e.channel_name) {
+      if (e.node) e.node.style.display = "none";
+      // console.log(e)
+      return;
+    }
 
     // TODO: Need to change here after modification in block from boolean val to video categories array
     const cached = getCachedDecision(e.channel_id);
@@ -264,19 +269,40 @@ function scanAndBlock() {
             // console.log(
             //   `Blocked:${shouldBlock} -> ${incomingName} -> ${r.channel_categories} Allowed Category: ${ALLOWED_CATEGORIES}`
             // );
+          } else {
+            console.log(
+              `Allowed: ${incomingName} -> ${r.channel_categories} Allowed Category: ${ALLOWED_CATEGORIES}`
+            );
           }
         });
       }
     );
   }
 
+  // Just upgraded the mix for detecting auto generated videos
   // hide obvious "Mix" rows
   entries.forEach((e) => {
     if (!e || !e.node) return;
-    const isMix =
-      e.node.innerText?.toLowerCase().includes("mix") ||
-      e.node.querySelector("ytd-badge-supported-renderer[icon='MIX']");
-    if (isMix) e.node.style.display = "none";
+
+    // Get the video link (handles all layouts)
+    const link = e.node.querySelector("a[href*='/watch']");
+    const href = link?.getAttribute("href") || "";
+
+    // Detect Mix video by URL pattern (most reliable)
+    const isMixByURL = href.includes("list=RD");
+
+    // Your existing detection methods
+    const isMixByText = e.node.innerText?.toLowerCase().includes("mix");
+    const isMixByBadge = e.node.querySelector(
+      "ytd-badge-supported-renderer[icon='MIX']"
+    );
+
+    // Final mix detection
+    const isMix = isMixByURL || isMixByText || isMixByBadge;
+
+    if (isMix) {
+      e.node.style.display = "none";
+    }
   });
 
   // hide shorts/rich sections

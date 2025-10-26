@@ -36,55 +36,58 @@ db = client[DB_NAME]
 def get_yt_playlist_id(identifier, search_by='id'):
     """Get uploads playlist ID by channel ID, handle, or username"""
 
-    if search_by == 'handle':
-        # Clean the handle (remove /@ prefixes)
-        clean_handle = identifier.replace('/@', '').replace('@', '')
+    try:
+        if search_by == 'handle':
+            # Clean the handle (remove /@ prefixes)
+            clean_handle = identifier.replace('/@', '').replace('@', '')
 
-        request = youtube.channels().list(
-            part='snippet,statistics,contentDetails,brandingSettings',
-            forHandle=clean_handle
-        )
-    elif search_by == 'username':
-        request = youtube.channels().list(
-            part='snippet,statistics,contentDetails,brandingSettings',
-            forUsername=identifier
-        )
-    else:  # search_by == 'id'
-        clean_id = identifier.replace('/', '')
-        request = youtube.channels().list(
-            part='snippet,statistics,contentDetails,brandingSettings',
-            id=clean_id
-        )
+            request = youtube.channels().list(
+                part='snippet,statistics,contentDetails,brandingSettings',
+                forHandle=clean_handle
+            )
+        elif search_by == 'username':
+            request = youtube.channels().list(
+                part='snippet,statistics,contentDetails,brandingSettings',
+                forUsername=identifier
+            )
+        else:  # search_by == 'id'
+            clean_id = identifier.replace('/', '')
+            request = youtube.channels().list(
+                part='snippet,statistics,contentDetails,brandingSettings',
+                id=clean_id
+            )
 
-    response = request.execute()
+        response = request.execute()
 
-    # if response['items']:
-    #     uploads_playlist_id = response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
-    #     return uploads_playlist_id
-    # return None
+        # if response['items']:
+        #     uploads_playlist_id = response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+        #     return uploads_playlist_id
+        # return None
 
-    if not response['items']:
-        return None
+        if not response['items']:
+            return None
 
-    channel = response['items'][0]
-    snippet = channel['snippet']
-    stats = channel['statistics']
+        channel = response['items'][0]
+        snippet = channel['snippet']
+        stats = channel['statistics']
 
-    info = {
-        'channel_id': channel['id'],
-        'title': snippet.get('title'),
-        'description': snippet.get('description'),
-        'published_at': snippet.get('publishedAt'),
-        'country': snippet.get('country'),
-        'thumbnails': snippet.get('thumbnails', {}),
-        'view_count': stats.get('viewCount'),
-        'subscriber_count': stats.get('subscriberCount'),
-        'video_count': stats.get('videoCount'),
-        'uploads_playlist_id': channel['contentDetails']['relatedPlaylists']['uploads']
-    }
+        info = {
+            'channel_id': channel['id'],
+            'title': snippet.get('title'),
+            'description': snippet.get('description'),
+            'published_at': snippet.get('publishedAt'),
+            'country': snippet.get('country'),
+            'thumbnails': snippet.get('thumbnails', {}),
+            'view_count': stats.get('viewCount'),
+            'subscriber_count': stats.get('subscriberCount'),
+            'video_count': stats.get('videoCount'),
+            'uploads_playlist_id': channel['contentDetails']['relatedPlaylists']['uploads']
+        }
 
-    return info
-
+        return info
+    except Exception as e:
+        print("ERR OCCURRED IN:: get_yt_playlist_id function while fetching channel data -> ", e)
+        return  None
 
 def get_videos_from_playlist(playlist_id):
     """Get 10 videos from a specific playlist"""
@@ -111,7 +114,7 @@ def get_videos_from_playlist(playlist_id):
         return videos
 
     except Exception as e:
-        print(f"Error fetching playlist {playlist_id}: {e}")
+        print(f"ERR OCCURRED IN:: get_videos_from_playlist function while fetching playlist information {playlist_id}: {e}")
         return []
 
 def write_to_batch_file(channel_name, channel_desc, uploaded_videos, file_path, unique_id) :
@@ -138,12 +141,11 @@ def write_to_batch_file(channel_name, channel_desc, uploaded_videos, file_path, 
         "additionalProperties": False
     }
 
-    # TODO: In System prompt only keep Engineering, Medical, Management and Arts (instead of all of these)
     system_prompt = """You are a YouTube channel categorizer. Analyze the channel name and video content to determine which categories the channel belongs to.
 
     Categories (use integers 0-6):
     0: IT & Computer Science (AI, CS, IT, Data Science, Cybersecurity, Game development etc)
-    1: Core Engineering & Robotics (Mechanical, Electrical, Mechatronics, Robotics, Aeronautics, Chemical, Electronics & Communication, Instrumentation, Industrial & Production, Aerospace, Automobile, Metallurgical & Materials, Environmental, Mining,Marine & Ocean, Petroleum ,Biomedical, Nuclear, Structural , Agricultural, Textile    etc)
+    1: Core Engineering & Robotics (Mechanical, Electrical, Mechatronics, Robotics, Aeronautics, Chemical, Electronics & Communication, Instrumentation, Industrial & Production, Aerospace, Automobile, Metallurgical & Materials, Environmental, Mining,Marine & Ocean, Petroleum ,Biomedical, Nuclear, Structural , Agricultural, Textile etc)
     2: Medicine, Health & Life Sciences	(Medicine, Biotech, Biomedical, Nursing, Biotechnology, Genetics, Zoology, Botany, Biochemistry, Environmental Science, Pharmacy,  Marine Biology, Medical Laboratory Technology,Bachelor of Medicine, Bachelor of Surgery, Bachelor of Ayurvedic Medicine & Surger, Bachelor of Homeopathic Medicine & Surgery, Bachelor of Physiotherapy, Biological Sciences   etc)
     3: Business, Finance & Economics	(MBA, Fintech, Management, Finance, Chartered Accountant, Economics, Commerce, Foreign Trade Management, Banking, Marketing,  Supply Chain Management  etc)
     4: Arts & Humanities  (Literature, Philosophy, Geography, Economics, Political Science, Humanities, History, Languages & Linguistics,Religious Studies, Sociology, Psychology, Anthropology, Archaeology, Arts & Fine Arts, Music & Performing Arts, Theater & Drama, Design & Visual Communication , Media & Communication, Cultural Studies, Education & Pedagogy, Public Administration & Policy, Interdisciplinary Arts, Fashion & Textile Design, Game Design & Animation , Digital Media Arts, Creative Writing & Literature, Cultural Heritage and Preservation, Environmental and Ecological Arts, Heritage & Museum Studies  etc)
@@ -179,27 +181,35 @@ def write_to_batch_file(channel_name, channel_desc, uploaded_videos, file_path, 
     try:
         with open(file_path, "a", encoding="utf-8") as file:
             file.write(json.dumps(batch_request, ensure_ascii=False) + "\n")
-
         
+        print(f"Added batch request for channel: {channel_name}")
     except (FileNotFoundError, json.JSONDecodeError):
-       print("FILE DOSE NOT EXISTS ")
-
-
-    print(f"Added batch request for channel: {channel_name}")
+       print("ERR OCCURRED IN:: write_to_batch_file function -> File dose not exist/incorrect json -> ", e)
+    except Exception as e:
+        print("ERR OCCURRED IN:: write_to_batch_file function -> ", e)    
 
 def submit_task(file_path):
     """upload batch file to groq and submit the file id return both groq file_path and batch_id"""
-    file_upload_response  = groq_client.files.create(file=open(file_path, "rb"), purpose="batch")
+
+    try:
+        file_upload_response  = groq_client.files.create(file=open(file_path, "rb"), purpose="batch")
+    except Exception as e:
+        print("ERR OCCURRED IN:: submit_task function while uploading batch file to groq cloud-> ", e)
+        return None, None
 
     print("Uploaded file disc:: ", file_upload_response)
   
-    submit_run_response = groq_client.batches.create(
-        completion_window="24h",
-        endpoint="/v1/chat/completions",
-        input_file_id=file_upload_response.id,
-    )
+    try:
+        submit_run_response = groq_client.batches.create(
+            completion_window="24h",
+            endpoint="/v1/chat/completions",
+            input_file_id=file_upload_response.id,
+        )
 
-    return file_upload_response.id, submit_run_response.id
+        return file_upload_response.id, submit_run_response.id
+    except Exception as e:
+        print("ERR OCCURRED IN:: submit_task function while calling chat completion api using batch file -> ", e)
+        return None, None
 
 def execute_new_jobs():
     """
@@ -210,11 +220,15 @@ def execute_new_jobs():
 
     batch_collection = db['batches']
     collection = db["channels"]
-    BATCH_SIZE = 5
+    BATCH_SIZE = 50  # TODO: Increase batch size to 50
 
     # Use a cursor to stream through results in batches
-    cursor = collection.find({"status": 0}).batch_size(BATCH_SIZE)
-
+    try:
+        cursor = collection.find({"status": 0}).batch_size(BATCH_SIZE)  # Might need its own exceptional handling
+    except Exception as e:
+        print("ERR OCCURRED IN:: execute_new_job function while acquiring cursor from MongoDB for batch insert")
+        return 
+    
     while True:
         batch = []
         try:
@@ -251,18 +265,21 @@ def execute_new_jobs():
             else :
                 channel_info = get_yt_playlist_id(channel["channel_handle"], search_by='id') # id's wont have @ in it
 
-            # If there is no channel info (may occur due to invalid channel name ot handle)
-            if len(channel_info) == 0:
+            # If there is no channel info (may occur due to invalid channel name or handle)
+            if channel_info == None:
                 continue
 
             playlist_id = channel_info['uploads_playlist_id']
             ids = [playlist_id]
             videos = get_videos_from_playlist(ids[0])
 
+            # If there are not videos to process or err occurred in get_videos_from_playlist function
+            if len(videos) == 0: 
+                continue
+
             channel_name = channel["channel_name"]
             channel_desc = channel_info["description"]
-
-            # TODO: Remove the description form the video_lines, It should only contain video['title'] and try to include channel description int this instead of description for whole video 
+ 
             video_lines = [
                 f"{i}. video title: {video['title']}"
                 for i, video in enumerate(videos, 1)
@@ -278,6 +295,11 @@ def execute_new_jobs():
 
         groq_file_path, batch_id = submit_task(file_path) 
 
+        if groq_file_path == None or batch_id == None:
+            print("ERR OCCURRED IN:: execute_new_job function while calling submit_task fn, it returned None in groq_file_path or batch_id -> ", e)
+            return
+
+
         # push groq_file_path and batch_id into the batch schema
         batch_doc = {
             'file_id': groq_file_path,
@@ -290,44 +312,60 @@ def execute_new_jobs():
             result = batch_collection.insert_one(batch_doc)
             print(f"Successfully inserted batch with batch id: {batch_doc['batch_id']} file id {batch_doc['file_id']}")
         except Exception as e:
-            print(f"Error inserting batch: {e}")
+            print(f"ERR OCCURRED IN:: execute_new_job function while inserting batch entry in MongoDB -> {e}")
     
-        print("===", len(processed_successfully))
+        # print("===", len(processed_successfully))
         # Bulk update status to 1 for all successfully processed channels (deserves its own function)
-        if processed_successfully:
-            update_operations = [
-                UpdateOne(
-                    {
-                        "channel_name": channel["channel_name"],
-                        "channel_handle": channel["channel_handle"],
-                    },
-                    {
-                        "$set": {"status": 1},
-                        "$push": {"videos": {"$each": channel["videos"]}}   # just update here to insert videos
-                    }
-                ) 
-                for channel in processed_successfully
-            ]
-            
-            result = collection.bulk_write(update_operations)
-            print(f"Updated status for {result.modified_count} documents in this batch")
+
+        try:
+            if processed_successfully:
+                update_operations = [
+                    UpdateOne(
+                        {
+                            "channel_name": channel["channel_name"],
+                            "channel_handle": channel["channel_handle"],
+                        },
+                        {
+                            "$set": {"status": 1},
+                            "$push": {"videos": {"$each": channel["videos"]}}   # just update here to insert videos
+                        }
+                    ) 
+                    for channel in processed_successfully
+                ]
+                
+                result = collection.bulk_write(update_operations)
+                print(f"Updated status for {result.modified_count} documents in this batch")
+        except Exception as e:
+            print("ERR OCCURRED IN:: execute_new_job function while inserting processed channel data to MongoDB -> ", e)
+            return
+    
 
     print("All batches processed successfully!")
-    return  # for testing purpose 
+    return
 
 def update_running_jobs():
     """
         Fetch from batch one at a time check the status of batch file if failed re-run, if running skip it and if completed download the result from groq cloud and update the status to 2.
         Calls update channel database function
     """
-    collection = db["batches"] 
-    docs = list(collection.find({"status": 0}))  # all the running jobs
+
+    try:
+        collection = db["batches"] 
+        docs = list(collection.find({"status": 0}))  # TODO: It might load too many records at once
+    except Exception as e:
+        print("ERR OCCURRED IN:: update_running_jobs function while fetching all the unprocessed batches -> ", e)
+        return
 
     for doc in docs:
         # check if batch is finished running , if not continue
-        response = groq_client.batches.retrieve(doc["batch_id"])
-        response = json.loads(response.to_json())
-        # print(response)
+
+        try:
+            response = groq_client.batches.retrieve(doc["batch_id"])
+            response = json.loads(response.to_json())
+            # print(response)
+        except Exception as e:
+            print("ERR OCCURRED IN:: update_running_jobs function while retrieve batch file form groq -> ", e)
+            continue
 
         # if yes call update_channel_database function(batch_id) to get the result and update channel database
         if response["status"] == "completed" and response["output_file_id"] != None:
@@ -341,11 +379,16 @@ def update_running_jobs():
             print(f"BATH ID: {response['status']}")
             continue
 
-        # TODO: (uncomment this) if above operation is successful then update batch status to 1
-        result = collection.update_one(
-            {'batch_id': doc["batch_id"]},
-            {"$set": {"status": 1}}
-        )
+        # if above operation is successful then update batch status to 1
+
+        try:
+            result = collection.update_one(
+                {'batch_id': doc["batch_id"]},
+                {"$set": {"status": 1}}
+            )
+        except Exception as e:
+            print("ERR OCCURRED IN:: update_running_jobs function while updating batch status -> ", e)
+            continue
 
         print("Number of batch completed: ", result.matched_count)
         
@@ -353,10 +396,16 @@ def update_channel_database(output_file_id, unique_id):
     """
         Takes file path as an input and updates the channel database with the new data.
     """
-    response = groq_client.files.content(output_file_id) # once fetched it will not be available anymore
 
-    file_path = folder / f"{unique_id}_batch_results.jsonl"
-    response.write_to_file(file_path)
+    try:
+        response = groq_client.files.content(output_file_id) # once fetched it will not be available anymore
+
+        file_path = folder / f"{unique_id}_batch_results.jsonl"
+        response.write_to_file(file_path)
+    except Exception as e:
+        print("ERR OCCURRED IN:: update_channel_database function while fetching processed file form groq or saving file locally -> ", e)
+        return
+
     
     results = []
     with open(file_path, "r", encoding="utf-8") as f:
@@ -396,9 +445,8 @@ def update_channel_database(output_file_id, unique_id):
 
     # TODO: iterate through result and save the result to database in bulk
     for result in results:
-        content_raw = result["response"]["body"]["choices"][0]["message"]["content"]
-
         try:
+            content_raw = result["response"]["body"]["choices"][0]["message"]["content"]
             content_json = json.loads(content_raw)
             validated_result = ChannelCategoryAnalysis(**content_json)
             print("Success:")
@@ -406,25 +454,37 @@ def update_channel_database(output_file_id, unique_id):
         except json.JSONDecodeError:
             # if it's not valid JSON, just keep it as string
             continue
+        except Exception as e:
+            print("ERR OCCURRED IN:: update_channel_database function while iterating through each channel categories -> ", e)
+            continue
 
-        channel_name = content_json["channel_name"]     # filter the doc
-        categories = content_json["categories"]         # update the categories field in doc
+        try:
 
-        if not channel_name or not isinstance(categories, list):
-            print("ERR IN LLM OUTPUT FORMAT:: channel_name not string or categories not list")
-            continue 
+            channel_name = content_json["channel_name"]     # filter the doc
+            categories = content_json["categories"]         # update the categories field in doc
 
-        bulk_ops.append(
-            UpdateOne(
-                filter={"channel_name": channel_name},        
-                update={"$set": {"channel_category": categories, "status": 2}},
-                upsert=False                                 
+            if not channel_name or not isinstance(categories, list):
+                print("ERR IN LLM OUTPUT FORMAT:: channel_name not string or categories not list")
+                continue 
+
+            bulk_ops.append(
+                UpdateOne(
+                    filter={"channel_name": channel_name},        
+                    update={"$set": {"channel_categories": categories, "status": 2}},
+                    upsert=False                                 
+                )
             )
-        )
+
+        except Exception as e:
+            print("ERR OCCURRED IN:: update_channel_database while preparing categories to save to MongoDB -> ", e)
+            continue
 
     if bulk_ops:
-        result = collection.bulk_write(bulk_ops)
-        print(f"Matched: {result.matched_count}, Modified: {result.modified_count}")
+        try:
+            result = collection.bulk_write(bulk_ops)
+            print(f"Matched: {result.matched_count}, Modified: {result.modified_count}")
+        except Exception as e:
+            print("ERR OCCURRED IN:: update_channel_database function while batch inserting categories -> ", e)
     else:
         print("No valid updates found.")
 
